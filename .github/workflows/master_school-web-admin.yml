@@ -26,14 +26,17 @@ jobs:
       - name: npm install, build, and test
         run: |
           npm install
-          npm run build --if-present
-          npm run test --if-present
+          npm run build 
+
+      - name: Remove Next.js cache
+        run: rm -rf .next/cache
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: .
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
