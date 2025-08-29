@@ -117,7 +117,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "./node_modules/next/dist/bin/next start -p $PORT",
     "lint": "eslint ./src --config ./eslint.config.mjs",
     "lint:fix": "eslint --fix ./src --config ./eslint.config.mjs",
     "postinstall": "node src/utils/node-scripts/fuse-react-message.js",
