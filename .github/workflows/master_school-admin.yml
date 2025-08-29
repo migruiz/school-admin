@@ -31,15 +31,12 @@ jobs:
       - name: Remove Next.js cache
         run: rm -rf .next/cache
 
-      - name: Package app into ZIP
-        run: |
-          zip -r app.zip .next node_modules package.json package-lock.json public
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: app.zip
+          path: .
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
@@ -53,7 +50,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: .
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -69,7 +65,7 @@ jobs:
             az webapp config appsettings set \
               --name school-admin \
               --resource-group retns \
-              --settings WEBSITE_RUN_FROM_PACKAGE=1
+              --settings WEBSITE_RUN_FROM_PACKAGE=0
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -77,5 +73,5 @@ jobs:
         with:
           app-name: 'school-admin'
           slot-name: 'Production'
-          package: app.zip
+          package: .
           
