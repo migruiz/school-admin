@@ -25,18 +25,21 @@ jobs:
 
       - name: npm install, build, and test
         run: |
-          npm install
+          npm ci --production
           npm run build 
 
       - name: Remove Next.js cache
         run: rm -rf .next/cache
 
+      - name: Package app into ZIP
+        run: |
+          zip -r app.zip .next node_modules package.json package-lock.json public
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
-          include-hidden-files: true
+          path: app.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,6 +53,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+          path: .
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -58,11 +62,20 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_98171467D9A449DD9747DC0083A11BBE }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_24C999638DA347C8951D85D6B6D8F173 }}
 
+      - name: Set Run-From-Package setting
+        uses: azure/cli@v1
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --name school-admin \
+              --resource-group retns \
+              --settings WEBSITE_RUN_FROM_PACKAGE=1
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'school-admin'
           slot-name: 'Production'
-          package: .
+          package: app.zip
           
